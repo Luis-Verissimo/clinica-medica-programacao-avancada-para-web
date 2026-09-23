@@ -1,3 +1,6 @@
+import { prisma } from "../database/prisma.js";
+import type { PacienteDTO } from "../types/paciente.js";
+
 export async function findAll() {
   return await prisma.paciente.findMany();
   //SELECT * FROM pacientes;
