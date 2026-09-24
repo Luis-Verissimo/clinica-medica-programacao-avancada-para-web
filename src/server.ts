@@ -3,6 +3,8 @@ import type { ErrorRequestHandler } from "express";
 import dotenv from "dotenv";
 import pacienteRoutes from "./routes/pacienteRoutes.js";
 
+import medicoRoutes from "./routes/medicoRoutes.js";
+
 dotenv.config();
 
 const app = express();
@@ -11,10 +13,12 @@ app.use(express.json());
 const PORT: number = Number(process.env.PORT || 3000);
 
 app.use(pacienteRoutes);
+app.use(medicoRoutes);
 
 const tratarErro: ErrorRequestHandler = (erro, req, res, next) => {
   if (erro.code === "P2025") {
-    res.status(404).json({ erro: "Paciente não encontrado." });
+    const recurso = erro.meta?.modelName === "Medico" ? "Médico" : "Paciente";
+    res.status(404).json({ erro: `${recurso} não encontrado.` });
     return;
   }
   if (erro.type === "entity.parse.failed") {

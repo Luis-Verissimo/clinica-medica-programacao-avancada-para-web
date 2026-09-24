@@ -13,3 +13,14 @@ model Paciente {
 
   @@map("pacientes")
 }
+
+model Medico {
+  id Int @id @default(autoincrement())
+  nome String
+  email String
+  telefone String
+  crm String
+  especialidade String
+
+  @@map("medicos")
+}
