@@ -11,6 +11,8 @@ model Paciente {
   email String
   telefone String
 
+  consultas Consulta[]
+
   @@map("pacientes")
 }
 
@@ -22,5 +24,21 @@ model Medico {
   crm String
   especialidade String
 
+  consultas Consulta[]
+
   @@map("medicos")
+}
+
+model Consulta {
+  id Int @id @default(autoincrement())
+  data DateTime @db.Date
+  turno String
+  medicoId Int
+  pacienteId Int
+  medico Medico @relation(fields: [medicoId], references: [id], onDelete: Restrict)
+  paciente Paciente @relation(fields: [pacienteId], references: [id], onDelete: Restrict)
+
+  @@index([medicoId])
+  @@index([pacienteId])
+  @@map("consultas")
 }

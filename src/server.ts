@@ -5,6 +5,8 @@ import pacienteRoutes from "./routes/pacienteRoutes.js";
 
 import medicoRoutes from "./routes/medicoRoutes.js";
 
+import consultaRoutes from "./routes/consultaRoutes.js";
+
 dotenv.config();
 
 const app = express();
@@ -14,11 +16,18 @@ const PORT: number = Number(process.env.PORT || 3000);
 
 app.use(pacienteRoutes);
 app.use(medicoRoutes);
+app.use(consultaRoutes);
 
 const tratarErro: ErrorRequestHandler = (erro, req, res, next) => {
   if (erro.code === "P2025") {
-    const recurso = erro.meta?.modelName === "Medico" ? "Médico" : "Paciente";
-    res.status(404).json({ erro: `${recurso} não encontrado.` });
+    const mensagem = erro.meta?.modelName === "Consulta"
+      ? "Consulta não encontrada."
+      : erro.meta?.modelName === "Medico" ? "Médico não encontrado." : "Paciente não encontrado.";
+    res.status(404).json({ erro: mensagem });
+    return;
+  }
+  if (erro.code === "P2003") {
+    res.status(409).json({ erro: "Médico ou paciente inexistente, ou registro vinculado a uma consulta." });
     return;
   }
   if (erro.type === "entity.parse.failed") {
