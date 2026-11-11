@@ -12,6 +12,7 @@ import {
 } from "@mantine/core";
 import axios from "axios";
 import { cadastrarSecretario } from "../services/api.ts";
+import { cadastroSecretarioSchema } from "@clinica/shared/secretario";
 
 type Props = {
   onVoltarParaLogin: () => void;
@@ -45,10 +46,40 @@ export function CadastroSecretarioPage({ onVoltarParaLogin }: Props) {
     setErroConfirmarSenha("");
     setSucesso("");
 
-    if (senha !== confirmarSenha) {
-      setErroConfirmarSenha("As senhas não conferem");
-      return;
+    // Confere os campos antes de chamar a API (fail fast), como no Login
+    let temErro = false;
+
+    const validacaoDados = cadastroSecretarioSchema.safeParse({
+      nome,
+      cpf,
+      telefone,
+      email,
+      senha,
+    });
+    if (!validacaoDados.success) {
+      temErro = true;
+      // Mostra só o primeiro erro de cada campo
+      const camposComErro: string[] = [];
+      for (const erro of validacaoDados.error.issues) {
+        const campo = String(erro.path[0]);
+        if (camposComErro.includes(campo)) continue;
+        camposComErro.push(campo);
+
+        if (campo === "nome") setErroNome(erro.message);
+        if (campo === "cpf") setErroCpf(erro.message);
+        if (campo === "telefone") setErroTelefone(erro.message);
+        if (campo === "email") setErroEmail(erro.message);
+        if (campo === "senha") setErroSenha(erro.message);
+      }
     }
+
+    if (senha !== confirmarSenha) {
+      temErro = true;
+      setErroConfirmarSenha("As senhas não conferem");
+    }
+
+    // Só chama a API se estiver tudo certo
+    if (temErro) return;
 
     setCarregando(true);
     try {

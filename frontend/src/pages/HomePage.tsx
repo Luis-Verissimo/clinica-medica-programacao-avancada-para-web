@@ -1,17 +1,21 @@
-import { Alert, Table, Title } from "@mantine/core";
+import { Alert, Button, Group, Table, Title } from "@mantine/core";
+import { IconPlus } from "@tabler/icons-react";
 import { MenuLateral } from "../components/MenuLateral";
+import { NovaConsultaModal } from "../components/NovaConsultaModal";
 import { useEffect, useState } from "react";
 import type { Consulta } from "@clinica/shared/consulta";
 import { listarConsultas } from "../services/api";
 
 type Props = {
   nome: string;
+  onIrParaPacientes: () => void;
   onSair: () => void;
 };
 
-export function HomePage({ nome, onSair }: Props) {
+export function HomePage({ nome, onIrParaPacientes, onSair }: Props) {
   const [consultas, setConsultas] = useState<Consulta[]>([]);
   const [erro, setErro] = useState("");
+  const [formularioAberto, setFormularioAberto] = useState(false);
 
   async function buscarConsultas() {
     setErro("");
@@ -27,10 +31,23 @@ export function HomePage({ nome, onSair }: Props) {
   }, []); //executa uma única vez (ao construir este comp) a função buscarConsultas()
 
   return (
-    <MenuLateral nome={nome} onSair={onSair}>
-      <Title order={1} mb="xl">
-        Consultas
-      </Title>
+    <MenuLateral
+      nome={nome}
+      paginaAtual="consultas"
+      onNavegar={(pagina) => {
+        if (pagina === "pacientes") onIrParaPacientes();
+      }}
+      onSair={onSair}
+    >
+      <Group justify="space-between" mb="xl">
+        <Title order={1}>Consultas</Title>
+        <Button
+          leftSection={<IconPlus size={18} />}
+          onClick={() => setFormularioAberto(true)}
+        >
+          Nova consulta
+        </Button>
+      </Group>
       {erro && (
         <Alert color="red" mb="md">
           {erro}
@@ -60,6 +77,15 @@ export function HomePage({ nome, onSair }: Props) {
           </Table.Tbody>
         </Table>
       </Table.ScrollContainer>
+
+      <NovaConsultaModal
+        aberto={formularioAberto}
+        onFechar={() => setFormularioAberto(false)}
+        onSalvar={() => {
+          setFormularioAberto(false);
+          buscarConsultas(); // atualiza a lista com a consulta nova
+        }}
+      />
     </MenuLateral>
   );
 }
